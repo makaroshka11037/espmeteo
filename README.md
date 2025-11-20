@@ -23,3 +23,7 @@
   Установите библиотеки: ESP8266WiFi.h ; DHT.h ; NTPClient.h ; WiFiUdp.h ; FastBot.h .
 
   Загрузите код на плату.
+
+## Библиотеки
+ [ESP8266WiFI](https://github.com/sergionorenap/ESP8266WiFi.h) (ver 
+ [DHT]{
