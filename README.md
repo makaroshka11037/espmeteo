@@ -18,12 +18,17 @@
 ## Установка 
 Для установки и настройки бота:
 
-  Скачайте  main.ino файл, запустите удобный вам редактор кода. Отредактируйте нужные переменные.
+  Скачайте  main.ino файл, запустите удобный вам редактор кода. Отредактируйте переменные токена бота, имя сети и пароля вайфай.
 
-  Установите библиотеки: ESP8266WiFi.h ; DHT.h ; NTPClient.h ; WiFiUdp.h ; FastBot.h .
+  Установите библиотеки указанные [внизу ReadMe](#Libraries).
 
   Загрузите код на плату.
 
-## Библиотеки
- [ESP8266WiFI](https://github.com/sergionorenap/ESP8266WiFi.h) (ver 
- [DHT]{
+## Libraries
+ [ESP8266WiFI](https://github.com/sergionorenap/ESP8266WiFi.h)
+ [DHT](https://github.com/adafruit/DHT-sensor-library)
+ [NTPClient](https://github.com/arduino-libraries/NTPClient)
+ [WIfiUdp](https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266WiFi/src/WiFiUdp.h)
+ [FastBot](https://github.com/GyverLibs/FastBot)
+ [ESP8266WebServer](https://github.com/esp8266/ESPWebServer/blob/master/src/ESP8266WebServer.h)
+ 
