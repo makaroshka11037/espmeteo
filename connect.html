@@ -84,46 +84,9 @@ body {
     }</style>
 
 <script>
+
     let ws;
-
-    function connect() {
-        ws = new WebSocket('ws://' + window.location.host + '/ws');
-
-        ws.onmessage = function(event) {
-            try {
-                if (!event || !event.data) return;
-
-                const data = JSON.parse(event.data);
-                if (data.temp !== undefined) {
-                    document.getElementById('messages').innerHTML = 
-                        `Температура: ${data.temp} °C, Влажность: ${data.hum}%, Номер: ${data.serial}`;
-                    processsmile(data);
-                }
-            } catch (e) {
-                // Сюда попадает весь "флуд" и текст, который не JSON
-                console.log("Пропущен флуд:", event.data);
-            }
-        };
-
-        ws.onclose = function() {
-            console.log("Соединение потеряно");
-            setTimeout(connect, 2000);
-        };
-    }
-
-    function sendCommand() {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send("GET_DATA");
-        } else {
-            console.error("Ошибка: Соединение еще не установлено");
-        }
-    }
-
-    connect();
-
-
-// Передаем сюда уже распарсенный объект 'data'
-function processsmile(data) {
+    function processsmile(data) {
     const resultDiv = document.getElementById('result');
     
     // Проверяем, есть ли температура в пришедшем пакете
@@ -145,5 +108,52 @@ function processsmile(data) {
         console.warn("В JSON нет данных о температуре");
     }
 }
+
+    function connect() {
+        ws = new WebSocket('ws://' + window.location.host + '/ws');
+
+        ws.onmessage = function(event) {
+    try {
+        const data = JSON.parse(event.data);
+
+        if (data.temp !== undefined) {
+            const messages = document.getElementById('messages');
+            
+            messages.innerHTML = `
+                <div>Температура: ${data.temp} °C</div>
+                <div>Влажность: ${data.hum}%</div>
+                <div>Номер: ${data.serial}</div>
+            `;
+            processsmile(data); 
+            
+        } else {
+            console.log("Пришел JSON, но в нем нет 'temp':", data);
+        }
+    } catch (e) {
+        // Сюда попадет только реальный мусор (строки типа GET_DATA или "imhere")
+        console.log("флуд", event.data);
+    }
+};
+
+
+        ws.onclose = function() {
+            console.log("Соединение потеряно");
+            setTimeout(connect, 2000);
+        };
+    }
+
+    function sendCommand() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send("GET_DATA");
+        } else {
+            console.error("Ошибка: Соединение еще не установлено");
+        }
+    }
+
+    connect();
+
+
+// Передаем сюда уже распарсенный объект 'data'
+
 
 </script>
