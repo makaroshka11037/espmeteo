@@ -1,0 +1,34 @@
+<button onclick="sendCommand()">Запросить температуру</button>
+<div id="messages"></div>
+
+<script>
+    // Подключаемся к тому же адресу, что и ESP
+
+    const data = JSON.parse(event.data);
+    const temp = data.temperature;
+    const ws = new WebSocket('ws://' + window.location.host + '/ws');
+
+    ws.onmessage = function(event) {
+    try {
+        const data = JSON.parse(event.data);
+        if (data.temp !== undefined && data.hum !== undefined) {
+            const messages = document.getElementById('messages');
+            messages.innerHTML = `
+                <div class="sensor-data">
+                    <p>Температура: ${data.temp} °C</p>
+                    <p>Влажность: ${data.hum} %</p>
+                </div>
+            `;
+        }
+    } catch (e) {
+        // Если пришел текст (флуд), упадет сюда. 
+        console.log("Пропущен флуд:", event.data); 
+    }
+};
+
+
+    function sendCommand() {
+        ws.send("GET_DATA"); // Отправляем команду в сокет
+    }
+
+</script>
