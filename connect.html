@@ -1,16 +1,40 @@
-<button onclick="sendCommand()">Опросить ESP8266</button>
-<div id="messages"></div>
+<button onclick="sendCommand()">Запросить температуру</button>
+<div id="messages">Ожидание данных...</div>
 
 <script>
-    // Подключаемся к тому же адресу, что и ESP
-    const ws = new WebSocket('ws://' + window.location.host + '/ws');
+    let ws;
 
-    ws.onmessage = function(event) {
-        const messages = document.getElementById('messages');
-        messages.innerHTML += '<p>' + event.data + '</p>';
-    };
+    function connect() {
+        ws = new WebSocket('ws://' + window.location.host + '/ws');
+
+        ws.onmessage = function(event) {
+            try {
+                if (!event || !event.data) return;
+
+                const data = JSON.parse(event.data);
+                if (data.temp !== undefined) {
+                    document.getElementById('messages').innerHTML = 
+                        `Температура: ${data.temp} °C, Влажность: ${data.hum}%, Номер: ${data.serial}`;
+                }
+            } catch (e) {
+                // Сюда попадает весь "флуд" и текст, который не JSON
+                console.log("Пропущен флуд:", event.data);
+            }
+        };
+
+        ws.onclose = function() {
+            console.log("Соединение потеряно");
+            setTimeout(connect, 2000);
+        };
+    }
 
     function sendCommand() {
-        ws.send("GET_DATA"); // Отправляем команду в сокет
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send("GET_DATA");
+        } else {
+            console.error("Ошибка: Соединение еще не установлено");
+        }
     }
+
+    connect();
 </script>
