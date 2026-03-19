@@ -1,5 +1,87 @@
-<button onclick="sendCommand()">Запросить температуру</button>
-<div id="messages">Ожидание данных...</div>
+<div class="container">
+    <h2>Метеостанция</h2>
+    
+    <div id="messages" class="card">
+        <span class="placeholder"></span>
+    </div>
+
+    <button class="btn-primary" onclick="sendCommand()">
+        Ручное Обновление
+    </button>
+</div>
+
+
+<style>
+body {
+        background-image: url(https://img.freepik.com/premium-photo/low-angle-view-building-against-cloudy-sky_1048944-26912393.jpg);
+            background-repeat: no-repeat; /* Не повторять картинку */
+            background-position-y: -250px; /* Центрировать картинку */
+            background-size: cover; /* Растянуть на весь экран */
+            background-color: #f0f0f0; 
+            font-family: Arial, sans-serif;
+            margin: 10;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .container {
+        text-align: center;
+        width: 100%;
+        max-width: 350px;
+    }
+
+    /* Карточка с данными */
+    .card {
+       /* Используем rgba (красный, зеленый, синий, прозрачность от 0 до 1) */
+  		background-color: rgba(255, 255, 255, 0.2); /* Белый фон на 50% прозрачный */
+  		
+  		border: 1px solid #ccc;
+  		padding: 20px;
+  		width: 300px;
+        height: 100px;
+  		border-radius: 10px; 
+		
+  
+  		/* Эффект матового стекла (по желанию) */
+  		backdrop-filter: blur(10px);
+    }
+
+    /* Стили для строк с данными внутри карты */
+    .sensor-row {
+        font-size: 1.2rem;
+        margin: 5px 0;
+        font-weight: 500;
+    }
+
+    .placeholder {
+        color: #888;
+        font-style: italic;
+    }
+
+    /* Красивая кнопка */
+    .btn-primary {
+        background-color: #3498db;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-primary:active {
+        transform: scale(0.98);
+    }</style>
 
 <script>
     let ws;
@@ -15,6 +97,7 @@
                 if (data.temp !== undefined) {
                     document.getElementById('messages').innerHTML = 
                         `Температура: ${data.temp} °C, Влажность: ${data.hum}%, Номер: ${data.serial}`;
+                    processsmile(data);
                 }
             } catch (e) {
                 // Сюда попадает весь "флуд" и текст, который не JSON
@@ -37,4 +120,30 @@
     }
 
     connect();
+
+
+// Передаем сюда уже распарсенный объект 'data'
+function processsmile(data) {
+    const resultDiv = document.getElementById('result');
+    
+    // Проверяем, есть ли температура в пришедшем пакете
+    if (data.temp !== undefined) {
+        const temperature = parseFloat(data.temp);
+        
+        console.log('Найдена температура:', temperature + '°C');
+        
+        // Ссылки на картинки
+        const hotImg = "https://raw.githubusercontent.com/makaroshka11037/espmeteo/refs/heads/main/5262562830095252729.webp";
+        const coldImg = "https://raw.githubusercontent.com/makaroshka11037/espmeteo/refs/heads/main/5273804146783320326.webp";
+
+        // Определяем картинку
+        const imgSrc = (temperature > 21.9) ? hotImg : coldImg;
+        
+        resultDiv.innerHTML = `<img src="${imgSrc}" alt="Смайлик" width="256" height="256">`;
+    } else {
+        // Если в JSON нет ключа temp, ничего не меняем или пишем ошибку
+        console.warn("В JSON нет данных о температуре");
+    }
+}
+
 </script>
