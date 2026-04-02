@@ -86,75 +86,79 @@ body {
 
 <script>
 
-    let ws;
-    function processsmile(data) {
-    const resultDiv = document.getElementById('result');
+let ws;
+
+
+function updateDeviceCard(data) {
+    const messagesContainer = document.getElementById('messages');
     
-    // Проверяем, есть ли температура в пришедшем пакете
+    // Пытаемся найти существующую карточку по ID (используем serial как уникальный ключ)
+    let deviceCard = document.getElementById(`device-${data.serial}`);
+
+    // создаание блока при новом девайсе
+    if (!deviceCard) {
+        const placeholder = messagesContainer.querySelector('.placeholder');
+        if (placeholder) placeholder.remove();
+
+        deviceCard = document.createElement('div');
+        deviceCard.id = `device-${data.serial}`;
+        deviceCard.className = 'card'; 
+        deviceCard.style.marginBottom = "15px";
+        messagesContainer.appendChild(deviceCard);
+    }
+
+    deviceCard.innerHTML = `
+        <div style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.3); margin-bottom: 5px;">
+            ID: ${data.serial}
+        </div>
+        <div class="sensor-row">Температура: ${data.temp} °C</div>
+        <div class="sensor-row">Влажность: ${data.hum}%</div>
+    `;
+    processsmile(data);
+}
+
+function processsmile(data) {
+    const resultDiv = document.getElementById('result');
     if (data.temp !== undefined) {
         const temperature = parseFloat(data.temp);
-        
-        console.log('Найдена температура:', temperature + '°C');
-        
-        // Ссылки на картинки
         const hotImg = "https://raw.githubusercontent.com/makaroshka11037/espmeteo/refs/heads/main/5262562830095252729.webp";
         const coldImg = "https://raw.githubusercontent.com/makaroshka11037/espmeteo/refs/heads/main/5273804146783320326.webp";
-
-        // Определяем картинку
         const imgSrc = (temperature > 21.9) ? hotImg : coldImg;
-        
-        resultDiv.innerHTML = `<img src="${imgSrc}" alt="Смайлик" width="256" height="256">`;
-    } else {
-        // Если в JSON нет ключа temp, ничего не меняем или пишем ошибку
-        console.warn("В JSON нет данных о температуре");
+        resultDiv.innerHTML = `<img src="${imgSrc}" alt="smile" width="256" height="256">`;
     }
 }
 
-    function connect() {
-        ws = new WebSocket('ws://' + window.location.host + '/ws');
+function connect() {
+    ws = new WebSocket('ws://' + window.location.host + '/ws');
 
-        ws.onmessage = function(event) {
-    try {
-        const data = JSON.parse(event.data);
-
-        if (data.temp !== undefined) {
-            const messages = document.getElementById('messages');
-            
-            messages.innerHTML = `
-                <div>Температура: ${data.temp} °C</div>
-                <div>Влажность: ${data.hum}%</div>
-                <div>Номер: ${data.serial}</div>
-            `;
-            processsmile(data); 
-            
-        } else {
-            console.log("Пришел JSON, но в нем нет 'temp':", data);
+    ws.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.serial && data.temp !== undefined) {
+                updateDeviceCard(data); 
+            } else {
+                console.log("не то:", data);
+            }
+        } catch (e) {
+            console.log("не то:", event.data);
         }
-    } catch (e) {
-        // Сюда попадет только реальный мусор (строки типа GET_DATA или "imhere")
-        console.log("флуд", event.data);
+    };
+
+    ws.onclose = function() {
+        console.log("Соединение потеряно, переподключение...");
+        setTimeout(connect, 2000);
+    };
+}
+
+function sendCommand() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send("GET_DATA");
+    } else {
+        alert("Нет связи с сервером");
     }
-};
+}
 
-
-        ws.onclose = function() {
-            console.log("Соединение потеряно");
-            setTimeout(connect, 2000);
-        };
-    }
-
-    function sendCommand() {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send("GET_DATA");
-        } else {
-            console.error("Ошибка: Соединение еще не установлено");
-        }
-    }
-
-    connect();
-
-
-// Передаем сюда уже распарсенный объект 'data'
+connect();
 
 
 </script>
